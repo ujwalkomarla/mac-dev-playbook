@@ -1,0 +1,72 @@
+---
+
+configure_dotfiles: false
+configure_terminal: false
+configure_osx: false
+
+dotfiles_repo: https://github.com/ujwalkomarla/dotfiles.git
+dotfiles_repo_local_destination: ~/Downloads/gitRepos/dotfiles
+
+homebrew_installed_packages:
+  # - ansible # Installed via Pip.
+  - bash-completion
+  - gettext # https://www.labri.fr/perso/fleury/posts/programming/a-quick-gettext-tutorial.html
+  - git
+  - gpg # https://www.linode.com/docs/security/encryption/gpg-keys-to-send-encrypted-messages/
+  - httpie # https://httpie.org/
+  - node
+  - openssl
+  - ssh-copy-id
+  - wget
+  - zsh-history-substring-search
+  # Custom Items
+  - act
+  - gnupg
+  - hopenpgp-tools
+  - pass
+  - pass-otp
+  - pinentry-mac
+  - rclone # https://rclone.org - rsync for cloud storage
+  - signal
+  - syncthing
+  - thefuck # https://github.com/nvbn/thefuck - Magnificent app which corrects your previous console command.
+  - tldr # https://tldr.sh - Simplified and community-driven man pages
+  - tmux
+  - tree
+  # - virtualbox # Doesn't support ARM platform
+  # - wireguard-tools
+  - ykman
+  - yubikey-personalization
+  - zbar # QR-code scanner for pass otp
+
+homebrew_cask_apps:
+  - chromedriver
+  - docker
+  - firefox
+  - google-chrome
+  # Custom Items
+  - adobe-acrobat-reader
+  # - anki
+  - balenaetcher # ISO bootable disk
+  - discord
+  # - duckduckgo # Not yet available
+  - iterm2
+  - kindle
+  - obsidian
+  - overdrive-media-console
+  # - osxfuse # Doesn't run on monterey
+  - postman
+  - scroll-reverser
+  - spotify
+  - stellarium
+  - teamviewer
+  # - veracrypt
+  - visual-studio-code
+  - vlc
+  - vnc-viewer
+  - whatsapp
+  # - wine-stable # Not supported
+  - xquartz
+  # - zoomus # Installed by Work profile
+
+# Checkout git repos
