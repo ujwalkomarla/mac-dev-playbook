@@ -1,0 +1,72 @@
+---
+
+configure_dotfiles: no
+configure_sudoers: no
+configure_terminal: no
+configure_osx: no
+
+dotfiles_repo: https://github.com/ujwalkomarla/dotfiles.git
+dotfiles_repo_local_destination: ~/GitHub/dotfiles
+
+homebrew_installed_packages:
+  # - ansible # Installed via Pip.
+  - autoconf # https://www.edwardrosten.com/code/autoconf/
+  - bash-completion
+  - gettext # https://www.labri.fr/perso/fleury/posts/programming/a-quick-gettext-tutorial.html
+  - git
+  - go
+  - gpg # https://www.linode.com/docs/security/encryption/gpg-keys-to-send-encrypted-messages/
+  - hub # https://hub.github.com/
+  - httpie # https://httpie.org/
+  - ssh-copy-id
+  - openssl
+  - wget
+
+  - kite # https://kite.com/ - AI Autocomplete and Docs for Python
+  - packer
+  - pass
+  - pass-otp
+  - rclone # https://rclone.org - rsync for cloud storage
+  - rtv # https://github.com/michael-lazar/rtv - Browse Reddit from your Terminal
+  - thefuck # https://github.com/nvbn/thefuck - Magnificent app which corrects your previous console command.
+  - tldr # https://tldr.sh - Simplified and community-driven man pages
+  - tmux
+  - tree
+
+
+homebrew_cask_apps:
+  - docker
+  - firefox
+  - google-chrome
+  - macvim  # vim-anywhere dependency
+  - slack
+  - vagrant
+
+  - adobe-acrobat-reader
+  - amethyst
+  - anki
+  - discord
+  - iterm2
+  - kindle
+  # - limechat # No longer supported
+  - microsoft-office
+  - microsoft-teams
+  # - musixmatch # No longer supported
+  - overdrive-media-console
+  - postman
+  # - remote-desktop-connection # Not available
+  - scroll-reverser
+  - shiftit
+  - spotify
+  - stellarium
+  - teamviewer
+  - visual-studio-code
+  - vlc
+  - vnc-viewer
+  - whatsapp
+  - wine-stable
+  - xquartz
+  - zoomus
+
+# Checkout git repos
+
