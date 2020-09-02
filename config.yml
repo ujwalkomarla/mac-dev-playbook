@@ -33,6 +33,7 @@ homebrew_installed_packages:
   - tldr # https://tldr.sh - Simplified and community-driven man pages
   - tmux
   - tree
+  - youtube-dl #spotdl - spotify downloader, udemy downloader - github
 
 
 homebrew_cask_apps:
