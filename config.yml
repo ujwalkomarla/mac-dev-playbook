@@ -18,10 +18,11 @@ homebrew_installed_packages:
   - gpg # https://www.linode.com/docs/security/encryption/gpg-keys-to-send-encrypted-messages/
   - hub # https://hub.github.com/
   - httpie # https://httpie.org/
-  - ssh-copy-id
   - openssl
+  - ssh-copy-id
   - wget
 
+  - ffmpeg
   - kite # https://kite.com/ - AI Autocomplete and Docs for Python
   - packer
   - pass
@@ -60,6 +61,7 @@ homebrew_cask_apps:
   - spotify
   - stellarium
   - teamviewer
+  - veracrypt
   - visual-studio-code
   - vlc
   - vnc-viewer
