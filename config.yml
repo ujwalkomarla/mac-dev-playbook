@@ -33,6 +33,7 @@ homebrew_installed_packages:
   - tldr # https://tldr.sh - Simplified and community-driven man pages
   - tmux
   - tree
+  - virtualbox
   - youtube-dl #spotdl - spotify downloader, udemy downloader - github
 
 
@@ -47,6 +48,7 @@ homebrew_cask_apps:
   - adobe-acrobat-reader
   - amethyst
   - anki
+  - cryptomator
   - discord
   - iterm2
   - kindle
@@ -55,6 +57,7 @@ homebrew_cask_apps:
   - microsoft-teams
   # - musixmatch # No longer supported
   - overdrive-media-console
+  - osxfuse
   - postman
   # - remote-desktop-connection # Not available
   - scroll-reverser
