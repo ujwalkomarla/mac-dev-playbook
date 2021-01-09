@@ -29,12 +29,14 @@ homebrew_installed_packages:
   - pass-otp
   - rclone # https://rclone.org - rsync for cloud storage
   - rtv # https://github.com/michael-lazar/rtv - Browse Reddit from your Terminal
+  - signal
   - thefuck # https://github.com/nvbn/thefuck - Magnificent app which corrects your previous console command.
   - tldr # https://tldr.sh - Simplified and community-driven man pages
   - tmux
   - tree
   - virtualbox
   - youtube-dl #spotdl - spotify downloader, udemy downloader - github
+  - zbar # QR-code scanner for pass otp
 
 
 homebrew_cask_apps:
