@@ -52,6 +52,7 @@ homebrew_cask_apps:
   - anki
   - cryptomator
   - discord
+  - balenaetcher # ISO bootable disk
   - iterm2
   - kindle
   # - limechat # No longer supported
