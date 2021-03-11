@@ -24,6 +24,7 @@ homebrew_installed_packages:
 
   - ffmpeg
   - kite # https://kite.com/ - AI Autocomplete and Docs for Python
+  - nmap
   - packer
   - pass
   - pass-otp
@@ -37,7 +38,6 @@ homebrew_installed_packages:
   - virtualbox
   - youtube-dl #spotdl - spotify downloader, udemy downloader - github
   - zbar # QR-code scanner for pass otp
-
 
 homebrew_cask_apps:
   - docker
