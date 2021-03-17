@@ -21,8 +21,9 @@ homebrew_installed_packages:
   - openssl
   - ssh-copy-id
   - wget
-
+  # Custom Items
   - ffmpeg
+  - jq
   - kite # https://kite.com/ - AI Autocomplete and Docs for Python
   - nmap
   - packer
@@ -46,7 +47,7 @@ homebrew_cask_apps:
   - macvim  # vim-anywhere dependency
   - slack
   - vagrant
-
+  # Custom Items
   - adobe-acrobat-reader
   - amethyst
   - anki
