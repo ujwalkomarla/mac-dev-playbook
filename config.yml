@@ -37,7 +37,8 @@ homebrew_installed_packages:
   - tmux
   - tree
   - virtualbox
-  - youtube-dl #spotdl - spotify downloader, udemy downloader - github
+  - wireguard-tools
+  - youtube-dl # spotdl - spotify downloader, udemy downloader - github
   - zbar # QR-code scanner for pass otp
 
 homebrew_cask_apps:
@@ -79,4 +80,3 @@ homebrew_cask_apps:
   - zoomus
 
 # Checkout git repos
-
