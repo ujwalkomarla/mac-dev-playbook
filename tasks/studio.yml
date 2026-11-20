@@ -147,6 +147,7 @@
     - "{{ studio_home }}/.local/share/uv/tools/litellm/bin/python"
   register: studio_fw_apps
   changed_when: false
+  failed_when: item is failed and not ansible_check_mode
   check_mode: false
 
 - name: Allow service binaries through the firewall.
