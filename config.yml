@@ -1,0 +1,77 @@
+---
+configure_dotfiles: true
+configure_terminal: false
+configure_osx: false
+configure_dock: false
+
+dotfiles_repo: https://github.com/ujwalkomarla/dotfiles.git
+dotfiles_files:
+  - .zshrc
+  - .zprofile
+  - .gitignore
+  - .vimrc
+
+homebrew_taps:
+  - mostlygeek/llama-swap
+
+homebrew_installed_packages:
+  - bash-completion
+  - git
+  - gh
+  - go
+  - gpg
+  - httpie
+  - iperf
+  - sqlite
+  - nmap
+  - node
+  - ssh-copy-id
+  - openssl
+  - pv
+  - wget
+  - zsh-history-substring-search
+  # Inference
+  - llama.cpp
+  - mostlygeek/llama-swap/llama-swap
+  - uv
+  - hf
+  # Ops
+  - btop
+  - tmux
+  - restic
+  - jq
+  - yq
+  - mosh
+
+homebrew_cask_apps:
+  - duckduckgo
+  - firefox
+  - iterm2
+  - lm-studio
+  - obsidian
+  - orbstack
+  - rectangle
+  - visual-studio-code
+
+# Studio-specific settings and services (tasks/studio.yml).
+post_provision_tasks:
+  - "{{ playbook_dir }}/tasks/studio.yml"
+
+studio_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+studio_home: "/Users/{{ studio_user }}"
+studio_llm_dir: "{{ studio_home }}/LLM"
+studio_log_dir: /opt/homebrew/var/log
+# 112GB of 128GB, leaving 16GB for macOS.
+studio_wired_limit_mb: 114688
+
+studio_pmset:
+  sleep: 0
+  disksleep: 0
+  autorestart: 1
+  womp: 1
+  powernap: 0
+
+studio_ports:
+  llama_swap: 8080
+  mlx_audio: 8001
+  litellm: 4000
