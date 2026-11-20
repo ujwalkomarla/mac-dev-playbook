@@ -76,8 +76,8 @@ studio_ports:
 
 # Models served by the `llama serve` router. Options are `llama serve`
 # flags without the leading dashes.
-studio_qwen_dir: "{{ studio_llm_dir }}/models/Qwen3.8-27B-GGUF/snapshots/c1869413dece09109e55b7dcc2c77ef382b0d0bd"
-studio_gemma_dir: "{{ studio_llm_dir }}/models/gemma-4-31B-it-GGUF"
+studio_qwen_dir: "{{ studio_llm_dir }}/models/ggml-org/Qwen3.8-27B-GGUF"
+studio_gemma_dir: "{{ studio_llm_dir }}/models/lmstudio-community/gemma-4-31B-it-GGUF"
 studio_router_models:
   - name: "ggml-org/Qwen3.8-27B-GGUF:Q4_K_M"
     model: "{{ studio_qwen_dir }}/Qwen3.8-27B-Q4_K_M.gguf"
@@ -95,3 +95,9 @@ studio_router_models:
       ctx-size: 131072
       mmproj: "{{ studio_gemma_dir }}/mmproj-gemma-4-31B-it-BF16.gguf"
       tags: chat
+  - name: "ggml-org/gemma-4-E4B-it-GGUF:Q8_0"
+    model: "{{ studio_llm_dir }}/models/ggml-org/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q8_0.gguf"
+    options:
+      ctx-size: 16384
+      mmproj: "{{ studio_llm_dir }}/models/ggml-org/gemma-4-E4B-it-GGUF/mmproj-gemma-4-E4B-it-Q8_0.gguf"
+      tags: voice
