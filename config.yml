@@ -55,6 +55,12 @@ homebrew_cask_apps:
 post_provision_tasks:
   - "{{ playbook_dir }}/tasks/studio.yml"
 
+studio_dock_apps:
+  - /Applications/Firefox.app
+  - /Applications/DuckDuckGo.app
+  - /Applications/iTerm.app
+  - /Applications/Obsidian.app
+  - "/Applications/LM Studio.app"
 studio_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
 studio_home: "/Users/{{ studio_user }}"
 studio_llm_dir: "{{ studio_home }}/LLM"

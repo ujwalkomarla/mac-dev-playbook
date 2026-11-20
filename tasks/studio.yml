@@ -13,6 +13,33 @@
     - { domain: com.apple.screencapture, key: location, type: string, value: "{{ studio_home }}/Downloads" }
   become: false
 
+- name: Install dockutil.
+  community.general.homebrew_cask:
+    name: hpedrorodrigues/tools/dockutil
+    state: present
+  become: false
+
+- name: Read current Dock items.
+  command: dockutil --list
+  register: studio_dock_current
+  changed_when: false
+  check_mode: false
+  failed_when: false
+  become: false
+
+- name: Reset the Dock to the configured apps.
+  shell: |
+    dockutil --remove all --no-restart
+    {% for app in studio_dock_apps %}
+    dockutil --add "{{ app }}" --no-restart
+    {% endfor %}
+    dockutil --add /Applications --view grid --display folder --no-restart
+    killall Dock
+  when: >-
+    studio_dock_current.stdout_lines | map('regex_replace', '\t.*$', '') | list
+    != (studio_dock_apps | map('regex_replace', '^.*/(.*)\.app$', '\\1') | list) + ['Applications']
+  become: false
+
 - name: Disable automatic macOS update installs and restarts.
   community.general.osx_defaults:
     domain: /Library/Preferences/com.apple.SoftwareUpdate
