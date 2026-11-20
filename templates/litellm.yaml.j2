@@ -1,11 +1,11 @@
-# Add one entry per llama-swap model, e.g.:
-#
-#   - model_name: qwen-27b
-#     litellm_params:
-#       model: openai/qwen-27b
-#       api_base: http://127.0.0.1:{{ studio_ports.llama_swap }}/v1
-#       api_key: none
-model_list: []
+model_list:
+{% for m in studio_router_models %}
+  - model_name: "{{ m.name }}"
+    litellm_params:
+      model: "openai/{{ m.name }}"
+      api_base: http://127.0.0.1:{{ studio_ports.router }}/v1
+      api_key: os.environ/ROUTER_API_KEY
+{% endfor %}
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY

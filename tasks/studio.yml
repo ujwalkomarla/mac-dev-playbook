@@ -82,19 +82,30 @@
   changed_when: "'Installed' in studio_uv_tools.stdout"
   become: false
 
-- name: Render llama-swap and LiteLLM configs (never overwritten once edited).
+- name: Render the router model preset.
   template:
-    src: "{{ item }}.j2"
-    dest: "{{ studio_llm_dir }}/{{ item }}"
+    src: llama-router.ini.j2
+    dest: "{{ studio_llm_dir }}/llama-router.ini"
+    owner: "{{ studio_user }}"
+    mode: "0644"
+  register: studio_router_preset
+
+- name: Render LiteLLM config (never overwritten once edited).
+  template:
+    src: litellm.yaml.j2
+    dest: "{{ studio_llm_dir }}/litellm.yaml"
     owner: "{{ studio_user }}"
     mode: "0644"
     force: false
-  loop:
-    - llama-swap.yaml
-    - litellm.yaml
 
-- name: Generate LiteLLM master key.
-  shell: "umask 077 && printf 'LITELLM_MASTER_KEY=sk-%s\\n' \"$(openssl rand -hex 24)\" > {{ studio_llm_dir }}/litellm.env"
+- name: Generate router API key.
+  shell: "umask 077 && printf 'sk-%s\\n' \"$(openssl rand -hex 24)\" > {{ studio_llm_dir }}/router.keys"
+  args:
+    creates: "{{ studio_llm_dir }}/router.keys"
+  become: false
+
+- name: Generate LiteLLM environment (master key and router key).
+  shell: "umask 077 && printf 'LITELLM_MASTER_KEY=sk-%s\\nROUTER_API_KEY=%s\\n' \"$(openssl rand -hex 24)\" \"$(cat {{ studio_llm_dir }}/router.keys)\" > {{ studio_llm_dir }}/litellm.env"
   args:
     creates: "{{ studio_llm_dir }}/litellm.env"
   become: false
@@ -102,7 +113,8 @@
 - name: Resolve binaries for firewall allow rules.
   command: "realpath {{ item }}"
   loop:
-    - /opt/homebrew/bin/llama-swap
+    - /opt/homebrew/bin/llama
+    - /opt/homebrew/bin/llama-server
     - "{{ studio_home }}/.local/share/uv/tools/mlx-audio/bin/python"
     - "{{ studio_home }}/.local/share/uv/tools/litellm/bin/python"
   register: studio_fw_apps
@@ -122,16 +134,30 @@
     - label: local.studio.iogpu-wired-limit
       args: ["/usr/sbin/sysctl", "iogpu.wired_limit_mb={{ studio_wired_limit_mb }}"]
       keep_alive: false
-    - label: local.studio.llama-swap
+    - label: local.studio.llama-router
       user: "{{ studio_user }}"
       args:
-        - /opt/homebrew/bin/llama-swap
-        - --config
-        - "{{ studio_llm_dir }}/llama-swap.yaml"
-        - --listen
-        - ":{{ studio_ports.llama_swap }}"
+        - /opt/homebrew/bin/llama
+        - serve
+        - --models-preset
+        - "{{ studio_llm_dir }}/llama-router.ini"
+        - --host
+        - 0.0.0.0
+        - --port
+        - "{{ studio_ports.router }}"
+        - --api-key-file
+        - "{{ studio_llm_dir }}/router.keys"
+        - --models-max
+        - "0"
+        - --models-memory-margin
+        - "1024"
+        - --fit-target
+        - "1024"
+        - --sleep-idle-seconds
+        - "300"
+        - --spec-default
       env: { HOME: "{{ studio_home }}", HF_HOME: "{{ studio_llm_dir }}/hf" }
-      log: llama-swap
+      log: llama-router
     - label: local.studio.mlx-audio
       user: "{{ studio_user }}"
       args:
@@ -152,3 +178,7 @@
       log: litellm
   loop_control:
     label: "{{ item.label }}"
+
+- name: Restart the router when the preset changed.
+  command: launchctl kickstart -k system/local.studio.llama-router
+  when: studio_router_preset.changed

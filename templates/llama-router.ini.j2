@@ -1,0 +1,9 @@
+; Managed by Ansible (mac-dev-playbook). Edit studio_router_models in config.yml.
+{% for m in studio_router_models %}
+
+[{{ m.name }}]
+model = {{ m.model }}
+{% for k, v in m.options.items() %}
+{{ k }} = {{ v }}
+{% endfor %}
+{% endfor %}
