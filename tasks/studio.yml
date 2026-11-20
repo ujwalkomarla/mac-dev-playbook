@@ -47,6 +47,8 @@
     key: AutomaticallyInstallMacOSUpdates
     type: bool
     value: false
+  # macOS protects this plist from SSH sessions on some versions; set it in System Settings if this fails.
+  ignore_errors: true
 
 - name: Read power settings.
   command: pmset -g
