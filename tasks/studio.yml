@@ -27,17 +27,18 @@
   failed_when: false
   become: false
 
-- name: Reset the Dock to the configured apps.
+- name: Update the Dock.
   shell: |
-    dockutil --remove all --no-restart
-    {% for app in studio_dock_apps %}
-    dockutil --add "{{ app }}" --no-restart
+    {% for label in studio_dock_remove %}
+    dockutil --remove "{{ label }}" --no-restart || true
     {% endfor %}
-    dockutil --add /Applications --view grid --display folder --no-restart
+    {% for app in studio_dock_apps %}
+    dockutil --find "{{ app | basename | replace('.app', '') }}" >/dev/null 2>&1 || dockutil --add "{{ app }}" --no-restart
+    {% endfor %}
     killall Dock
   when: >-
-    studio_dock_current.stdout_lines | map('regex_replace', '\t.*$', '') | list
-    != (studio_dock_apps | map('regex_replace', '^.*/(.*)\.app$', '\\1') | list) + ['Applications']
+    (studio_dock_remove | select('in', studio_dock_current.stdout_lines | map('regex_replace', '\t.*$', '') | list) | list | length > 0)
+    or (studio_dock_apps | map('basename') | map('replace', '.app', '') | difference(studio_dock_current.stdout_lines | map('regex_replace', '\t.*$', '') | list) | length > 0)
   become: false
 
 - name: Disable automatic macOS update installs and restarts.

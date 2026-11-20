@@ -61,6 +61,25 @@ studio_dock_apps:
   - /Applications/iTerm.app
   - /Applications/Obsidian.app
   - "/Applications/LM Studio.app"
+studio_dock_remove:
+  - Safari
+  - Messages
+  - Mail
+  - Maps
+  - Photos
+  - FaceTime
+  - Phone
+  - Calendar
+  - Contacts
+  - Reminders
+  - Notes
+  - TV
+  - Music
+  - Games
+  - App Store
+  - iPhone Mirroring
+  - System Settings
+  - Downloads
 studio_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
 studio_home: "/Users/{{ studio_user }}"
 studio_llm_dir: "{{ studio_home }}/LLM"
