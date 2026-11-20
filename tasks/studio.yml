@@ -1,0 +1,154 @@
+---
+- name: Apply Finder and screenshot preferences.
+  community.general.osx_defaults:
+    domain: "{{ item.domain }}"
+    key: "{{ item.key }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+  loop:
+    - { domain: NSGlobalDomain, key: AppleShowAllExtensions, type: bool, value: true }
+    - { domain: com.apple.finder, key: ShowPathbar, type: bool, value: true }
+    - { domain: com.apple.finder, key: ShowStatusBar, type: bool, value: true }
+    - { domain: com.apple.finder, key: _FXShowPosixPathInTitle, type: bool, value: true }
+    - { domain: com.apple.screencapture, key: location, type: string, value: "{{ studio_home }}/Downloads" }
+  become: false
+
+- name: Disable automatic macOS update installs and restarts.
+  community.general.osx_defaults:
+    domain: /Library/Preferences/com.apple.SoftwareUpdate
+    key: AutomaticallyInstallMacOSUpdates
+    type: bool
+    value: false
+
+- name: Read power settings.
+  command: pmset -g
+  register: studio_pmset_current
+  changed_when: false
+  check_mode: false
+
+- name: Set power settings for an always-on server.
+  command: "pmset -a {{ item.key }} {{ item.value }}"
+  loop: "{{ studio_pmset | dict2items }}"
+  when: studio_pmset_current.stdout is not search('(?m)^\s*' ~ item.key ~ '\s+' ~ item.value ~ '\b')
+
+- name: Check Remote Login (SSH).
+  command: systemsetup -getremotelogin
+  register: studio_ssh
+  changed_when: false
+  check_mode: false
+
+- name: Enable Remote Login (SSH).
+  command: systemsetup -setremotelogin on
+  when: "'On' not in studio_ssh.stdout"
+
+- name: Check Screen Sharing.
+  command: launchctl print system/com.apple.screensharing
+  register: studio_screensharing
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Enable Screen Sharing.
+  command: launchctl load -w /System/Library/LaunchDaemons/com.apple.screensharing.plist
+  when: studio_screensharing.rc != 0
+
+- name: Check application firewall.
+  command: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
+  register: studio_firewall
+  changed_when: false
+  check_mode: false
+
+- name: Enable application firewall.
+  command: /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+  when: "'enabled' not in studio_firewall.stdout"
+
+- name: Create LLM directories.
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ studio_user }}"
+    mode: "0755"
+  loop:
+    - "{{ studio_llm_dir }}"
+    - "{{ studio_llm_dir }}/models"
+    - "{{ studio_llm_dir }}/hf"
+
+- name: Install uv tools (mlx-audio for Kokoro TTS and STT, litellm).
+  command: "/opt/homebrew/bin/uv tool install {{ item }}"
+  loop:
+    - "mlx-audio[server]"
+    - "litellm[proxy]"
+  register: studio_uv_tools
+  changed_when: "'Installed' in studio_uv_tools.stdout"
+  become: false
+
+- name: Render llama-swap and LiteLLM configs (never overwritten once edited).
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ studio_llm_dir }}/{{ item }}"
+    owner: "{{ studio_user }}"
+    mode: "0644"
+    force: false
+  loop:
+    - llama-swap.yaml
+    - litellm.yaml
+
+- name: Generate LiteLLM master key.
+  shell: "umask 077 && printf 'LITELLM_MASTER_KEY=sk-%s\\n' \"$(openssl rand -hex 24)\" > {{ studio_llm_dir }}/litellm.env"
+  args:
+    creates: "{{ studio_llm_dir }}/litellm.env"
+  become: false
+
+- name: Resolve binaries for firewall allow rules.
+  command: "realpath {{ item }}"
+  loop:
+    - /opt/homebrew/bin/llama-swap
+    - "{{ studio_home }}/.local/share/uv/tools/mlx-audio/bin/python"
+    - "{{ studio_home }}/.local/share/uv/tools/litellm/bin/python"
+  register: studio_fw_apps
+  changed_when: false
+  check_mode: false
+
+- name: Allow service binaries through the firewall.
+  command: "/usr/libexec/ApplicationFirewall/socketfilterfw {{ item[0] }} {{ item[1].stdout }}"
+  loop: "{{ ['--add', '--unblockapp'] | product(studio_fw_apps.results) | list }}"
+  loop_control:
+    label: "{{ item[0] }} {{ item[1].stdout }}"
+  changed_when: false
+
+- name: Install and load LaunchDaemons.
+  include_tasks: studio-daemon.yml
+  loop:
+    - label: local.studio.iogpu-wired-limit
+      args: ["/usr/sbin/sysctl", "iogpu.wired_limit_mb={{ studio_wired_limit_mb }}"]
+      keep_alive: false
+    - label: local.studio.llama-swap
+      user: "{{ studio_user }}"
+      args:
+        - /opt/homebrew/bin/llama-swap
+        - --config
+        - "{{ studio_llm_dir }}/llama-swap.yaml"
+        - --listen
+        - ":{{ studio_ports.llama_swap }}"
+      env: { HOME: "{{ studio_home }}", HF_HOME: "{{ studio_llm_dir }}/hf" }
+      log: llama-swap
+    - label: local.studio.mlx-audio
+      user: "{{ studio_user }}"
+      args:
+        - "{{ studio_home }}/.local/bin/mlx_audio.server"
+        - --host
+        - 0.0.0.0
+        - --port
+        - "{{ studio_ports.mlx_audio }}"
+      env: { HOME: "{{ studio_home }}", HF_HOME: "{{ studio_llm_dir }}/hf" }
+      log: mlx-audio
+    - label: local.studio.litellm
+      user: "{{ studio_user }}"
+      args:
+        - /bin/sh
+        - -c
+        - "set -a; . {{ studio_llm_dir }}/litellm.env; exec {{ studio_home }}/.local/bin/litellm --config {{ studio_llm_dir }}/litellm.yaml --host 0.0.0.0 --port {{ studio_ports.litellm }}"
+      env: { HOME: "{{ studio_home }}" }
+      log: litellm
+  loop_control:
+    label: "{{ item.label }}"

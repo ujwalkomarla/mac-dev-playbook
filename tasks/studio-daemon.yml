@@ -1,0 +1,15 @@
+---
+- name: "Install {{ item.label }} LaunchDaemon."
+  template:
+    src: studio-daemon.plist.j2
+    dest: "/Library/LaunchDaemons/{{ item.label }}.plist"
+    owner: root
+    group: wheel
+    mode: "0644"
+  register: studio_daemon_plist
+
+- name: "Reload {{ item.label }}."
+  shell: |
+    launchctl bootout system/{{ item.label }} 2>/dev/null || true
+    launchctl bootstrap system /Library/LaunchDaemons/{{ item.label }}.plist
+  when: studio_daemon_plist.changed
