@@ -49,27 +49,32 @@
     value: false
   # macOS protects this plist from SSH sessions on some versions; set it in System Settings if this fails.
   ignore_errors: true
+  become: true
 
 - name: Read power settings.
   command: pmset -g
   register: studio_pmset_current
   changed_when: false
   check_mode: false
+  become: true
 
 - name: Set power settings for an always-on server.
   command: "pmset -a {{ item.key }} {{ item.value }}"
   loop: "{{ studio_pmset | dict2items }}"
   when: studio_pmset_current.stdout is not search('(?m)^\s*' ~ item.key ~ '\s+' ~ item.value ~ '\b')
+  become: true
 
 - name: Check Remote Login (SSH).
   command: systemsetup -getremotelogin
   register: studio_ssh
   changed_when: false
   check_mode: false
+  become: true
 
 - name: Enable Remote Login (SSH).
   command: systemsetup -setremotelogin on
   when: "'On' not in studio_ssh.stdout"
+  become: true
 
 - name: Check Screen Sharing.
   command: launchctl print system/com.apple.screensharing
@@ -77,20 +82,24 @@
   changed_when: false
   failed_when: false
   check_mode: false
+  become: true
 
 - name: Enable Screen Sharing.
   command: launchctl load -w /System/Library/LaunchDaemons/com.apple.screensharing.plist
   when: studio_screensharing.rc != 0
+  become: true
 
 - name: Check application firewall.
   command: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
   register: studio_firewall
   changed_when: false
   check_mode: false
+  become: true
 
 - name: Enable application firewall.
   command: /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
   when: "'enabled' not in studio_firewall.stdout"
+  become: true
 
 - name: Create LLM directories.
   file:
@@ -102,6 +111,7 @@
     - "{{ studio_llm_dir }}"
     - "{{ studio_llm_dir }}/models"
     - "{{ studio_llm_dir }}/hf"
+  become: true
 
 - name: Install uv tools (mlx-audio for Kokoro TTS and STT, litellm).
   command: "/opt/homebrew/bin/uv tool install {{ item }}"
@@ -119,6 +129,7 @@
     owner: "{{ studio_user }}"
     mode: "0644"
   register: studio_router_preset
+  become: true
 
 - name: Render LiteLLM config (never overwritten once edited).
   template:
@@ -127,6 +138,7 @@
     owner: "{{ studio_user }}"
     mode: "0644"
     force: false
+  become: true
 
 - name: Generate router API key.
   shell: "umask 077 && printf 'sk-%s\\n' \"$(openssl rand -hex 24)\" > {{ studio_llm_dir }}/router.keys"
@@ -150,6 +162,7 @@
   register: studio_fw_apps
   changed_when: false
   check_mode: false
+  become: true
 
 - name: Allow service binaries through the firewall.
   command: "/usr/libexec/ApplicationFirewall/socketfilterfw {{ item[0] }} {{ item[1].stdout }}"
@@ -157,6 +170,7 @@
   loop_control:
     label: "{{ item[0] }} {{ item[1].stdout }}"
   changed_when: false
+  become: true
 
 - name: Install and load LaunchDaemons.
   include_tasks: studio-daemon.yml
@@ -208,7 +222,10 @@
       log: litellm
   loop_control:
     label: "{{ item.label }}"
+  become: true
 
 - name: Restart the router when the preset changed.
   command: launchctl kickstart -k system/local.studio.llama-router
   when: studio_router_preset.changed
+  become: true
+
